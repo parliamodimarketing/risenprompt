@@ -3,19 +3,24 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>RISEN Builder — costruttore di prompt</title>
+<title>RISEN Builder</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{--ink:#11242F;--soft:#40606E;--paper:#EDF0F1;--card:#fff;--line:#C9D4D8;--accent:#2F4FE0;--amber:#D98A16;--ok:#1E7A5C;--r:3px}
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 body{margin:0;background:var(--paper);color:var(--ink);font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
-header.masthead{border-bottom:1px solid var(--ink);padding:28px 24px 20px;max-width:1320px;margin:0 auto}
+header.masthead{border-bottom:1px solid var(--ink);padding:28px 24px 20px;max-width:1320px;margin:0 auto;position:relative}
 .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--soft)}
 h1.title{font-family:'Instrument Serif',Georgia,serif;font-weight:400;font-size:clamp(34px,6vw,58px);line-height:1;margin:8px 0 6px;letter-spacing:-.01em}
 h1.title em{font-style:italic;color:var(--accent)}
 .standfirst{max-width:64ch;color:var(--soft);margin:0}
+.langs{position:absolute;top:24px;right:24px;display:flex;gap:4px}
+.langs button{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;border:1px solid var(--line);background:none;color:var(--soft);padding:5px 9px;border-radius:var(--r);cursor:pointer}
+.langs button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+@media (max-width:600px){.langs{position:static;margin-bottom:12px}}
 .wrap{max-width:1320px;margin:0 auto;padding:24px;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:32px;align-items:start}
 @media (max-width:960px){.wrap{grid-template-columns:1fr;gap:24px}}
 .block{background:var(--card);border:1px solid var(--line);border-radius:var(--r);margin-bottom:16px;overflow:hidden}
@@ -62,138 +67,267 @@ button.act.ghost{background:none;color:var(--ink)}
 button.act:hover{opacity:.87}
 button.act:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 footer.foot{max-width:1320px;margin:0 auto;padding:8px 24px 48px;color:var(--soft);font-size:12.5px}
+.msg{font-size:13px;color:#B3261E;margin:8px 0 0}
+/* language chooser */
+.chooser{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.chooser-in{max-width:640px;width:100%;border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);padding:40px 0}
+.chooser h1{font-family:'Instrument Serif',Georgia,serif;font-weight:400;font-size:clamp(44px,9vw,84px);line-height:.95;margin:10px 0 14px}
+.chooser h1 em{font-style:italic;color:var(--accent)}
+.chooser p{color:var(--soft);margin:0 0 28px;font-size:16px}
+.pick{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:480px){.pick{grid-template-columns:1fr}}
+.pick button{font-family:inherit;text-align:left;border:1px solid var(--ink);background:var(--card);color:var(--ink);border-radius:var(--r);padding:20px 22px;cursor:pointer}
+.pick button:hover{background:var(--ink);color:#fff}
+.pick button:hover small{color:#C9D4D8}
+.pick b{display:block;font-family:'Instrument Serif',serif;font-weight:400;font-size:34px;line-height:1}
+.pick small{display:block;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--soft);margin-top:8px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
 
+<section class="chooser" id="chooser" hidden>
+  <div class="chooser-in">
+    <div class="eyebrow">R.I.S.E.N. · Role · Instructions · Steps · End goal · Narrowing</div>
+    <h1>RISEN <em>Builder</em></h1>
+    <p>Scegli la lingua · Elegí el idioma</p>
+    <div class="pick">
+      <button type="button" data-pick="it"><b>Italiano</b><small>Costruttore di prompt</small></button>
+      <button type="button" data-pick="es"><b>Español</b><small>Constructor de prompts</small></button>
+    </div>
+  </div>
+</section>
+
+<div id="app" hidden>
 <header class="masthead">
-  <div class="eyebrow">Costruttore di prompt · metodo R.I.S.E.N.</div>
-  <h1 class="title">Cinque campi, <em>un prompt che funziona</em>.</h1>
-  <p class="standfirst">Vale per qualsiasi compito: correggere, scrivere, analizzare, intervistare, insegnare. Compila le cinque sezioni e il prompt si scrive a destra mentre scrivi.</p>
+  <div class="langs" role="group" aria-label="Lingua / Idioma">
+    <button type="button" data-lang="it" aria-pressed="false">IT</button>
+    <button type="button" data-lang="es" aria-pressed="false">ES</button>
+  </div>
+  <div class="eyebrow" data-t="eyebrow"></div>
+  <h1 class="title" data-t="title" data-html></h1>
+  <p class="standfirst" data-t="standfirst"></p>
 </header>
 
 <div class="wrap">
-  <main>
-    <div id="blocks"></div>
-  </main>
-
+  <main><div id="blocks"></div></main>
   <aside class="panel">
-    <div class="panel-head"><h2>Il prompt</h2><span class="meter" id="meter">0 / 5 sezioni</span></div>
+    <div class="panel-head"><h2 data-t="panel"></h2><span class="meter" id="meter"></span></div>
     <pre class="out" id="out"></pre>
     <div class="actions">
-      <button class="act" id="btnCopy">Copia il prompt</button>
-      <button class="act ghost" id="btnMd">Scarica .md</button>
-      <button class="act ghost" id="btnJson">Scarica .json</button>
-      <button class="act ghost" id="btnLoad">Carica .json</button>
-      <button class="act ghost" id="btnClear">Svuota tutto</button>
+      <button class="act" id="btnCopy" data-t="copy"></button>
+      <button class="act ghost" id="btnMd" data-t="md"></button>
+      <button class="act ghost" id="btnJson" data-t="json"></button>
+      <button class="act ghost" id="btnLoad" data-t="load"></button>
+      <button class="act ghost" id="btnClear" data-t="clear"></button>
       <input type="file" id="fileIn" accept="application/json" hidden>
     </div>
-    <p class="hint" style="margin-top:10px">Il .md è il prompt pronto da incollare; il .json è la scheda, per riaprirla e versionarla.</p>
+    <p class="hint" style="margin-top:10px" data-t="filehint"></p>
+    <p class="msg" id="msg" role="status" hidden></p>
   </aside>
 </div>
-
-<footer class="foot">R.I.S.E.N. — Role · Instructions · Steps · End goal · Narrowing. Tutto gira nel browser: nessun dato lascia questa pagina.</footer>
+<footer class="foot" data-t="foot"></footer>
+</div>
 
 <script>
-const EMPTY={role:"",expertise:"",voice:"",task:"",method:"",criteria:"",steps:["",""],goal:"",success:"",format:"",bans:[],tone:[],length:"Massimo 300 parole per risposta",edge:"",extraBans:""};
-const state=JSON.parse(JSON.stringify(EMPTY));
-const BANS=["Non inventare dati, fonti o citazioni","Se manca un'informazione, chiedila invece di dedurla","Niente premesse né riassunti della richiesta","Non usare gergo senza spiegarlo","Una sola domanda per turno","Non dare la soluzione pronta","Non uscire dall'ambito indicato","Niente elenchi puntati salvo richiesta"];
-const TONES=["Neutro e professionale","Divulgativo","Giornalistico","Socratico","Diretto e sintetico","Caldo e colloquiale"];
-const LENS=["Massimo 150 parole per risposta","Massimo 300 parole per risposta","Massimo 600 parole per risposta","Nessun limite, ma niente ripetizioni"];
+const T = {
+ it: {
+  doc:"RISEN Builder — costruttore di prompt",
+  eyebrow:"Costruttore di prompt · metodo R.I.S.E.N.",
+  title:"Cinque campi, <em>un prompt che funziona</em>.",
+  standfirst:"Vale per qualsiasi compito: correggere, scrivere, analizzare, intervistare, insegnare. Compila le cinque sezioni e il prompt si scrive a destra mentre scrivi.",
+  panel:"Il prompt", meter:" / 5 sezioni", todo:"da compilare", done:"completa",
+  copy:"Copia il prompt", copied:"Copiato", copyFail:"Copia non riuscita",
+  md:"Scarica .md", json:"Scarica .json", load:"Carica .json", clear:"Svuota tutto", confirm:"Confermi?",
+  filehint:"Il .md è il prompt pronto da incollare; il .json è la scheda, per riaprirla e versionarla.",
+  badfile:"Il file non è una scheda RISEN valida.",
+  foot:"R.I.S.E.N. — Role · Instructions · Steps · End goal · Narrowing. Tutto gira nel browser: nessun dato lascia questa pagina.",
+  stepsLb:"Passaggi in sequenza", stepsHint:"Ricalca il processo reale. Tre-sei passaggi bastano.", addStep:"+ aggiungi passaggio",
+  stepFirst:"Il primo passaggio: cosa chiede o verifica prima di partire.", stepNext:"Passaggio successivo…", stepDel:"Elimina passaggio",
+  ghost:"«da compilare»",
+  bans:["Non inventare dati, fonti o citazioni","Se manca un'informazione, chiedila invece di dedurla","Niente premesse né riassunti della richiesta","Non usare gergo senza spiegarlo","Una sola domanda per turno","Non dare la soluzione pronta","Non uscire dall'ambito indicato","Niente elenchi puntati salvo richiesta"],
+  tones:["Neutro e professionale","Divulgativo","Giornalistico","Socratico","Diretto e sintetico","Caldo e colloquiale"],
+  lens:["Massimo 150 parole per risposta","Massimo 300 parole per risposta","Massimo 600 parole per risposta","Nessun limite, ma niente ripetizioni"],
+  out:{role:"## RUOLO",voice:"Voce: ",task:"## COSA DEVI FARE",method:"Metodo da seguire:",criteria:"Criteri di qualità:",steps:"## COME PROCEDI, IN QUEST'ORDINE",stepsRule:"Non saltare passaggi e non anticiparne uno successivo prima di aver chiuso il precedente.",goal:"## OBIETTIVO FINALE",success:"Il lavoro è riuscito quando: ",format:"Formato della risposta:",bans:"## VINCOLI — COSA NON DEVI FARE MAI",tone:"Tono: ",length:"Lunghezza: ",edge:"Casi limite:",close:"Se una richiesta ti porta fuori da questi vincoli, dillo apertamente invece di aggirarli."},
+  B:[
+   {l:"R",id:"role",t:"Role — chi è, prima ancora di aprire bocca",s:"L'identità che il modello assume. Più è specifica, più il registro tiene per tutta la conversazione.",f:[
+    {k:"role",lb:"Ruolo",ty:"ta",h:"Una frase in seconda persona: «Sei un…»",p:"Sei un revisore editoriale che lavora su testi divulgativi di marketing."},
+    {k:"expertise",lb:"Competenza da mettere in campo",ty:"ta",h:"Cosa sa fare meglio di chiunque altro.",p:"Riconosci a colpo d'occhio un attacco debole, un'idea sepolta a metà testo, un esempio che non regge."},
+    {k:"voice",lb:"Voce e postura",ty:"tx",h:"Come sta accanto a chi legge: mentore, sparring partner, editor severo…",p:"Editor esigente ma leale: dice le cose come stanno senza umiliare il testo."}]},
+   {l:"I",id:"instr",t:"Instructions — cosa deve fare, esattamente",s:"Qui trasferisci il tuo metodo. È la sezione che separa un prompt generico dal tuo.",f:[
+    {k:"task",lb:"Compito",ty:"ta",h:"L'azione centrale, in una frase.",p:"Leggi il testo che ti sottopongo e restituisci una revisione che lo renda più chiaro e più incisivo."},
+    {k:"method",lb:"Il metodo da seguire",ty:"ta",h:"Come lo faresti tu. Cosa guardi per primo, cosa perdoni, cosa no.",p:"Prima la tenuta dell'idea centrale, poi la struttura, infine la frase."},
+    {k:"criteria",lb:"Criteri di qualità",ty:"ta",h:"Le dimensioni su cui giudica. Uno per riga.",p:"Chiarezza dell'idea\nForza dell'attacco\nConcretezza degli esempi\nRitmo"}]},
+   {l:"S",id:"steps",t:"Steps — la sequenza che segue ogni volta",s:"Il processo reso esplicito. L'ordine conta: è ciò che rende il risultato prevedibile.",f:[{ty:"steps"}]},
+   {l:"E",id:"end",t:"End goal — cosa resta a chi legge",s:"Non cosa produce il modello: cosa cambia per chi lo usa.",f:[
+    {k:"goal",lb:"Risultato atteso",ty:"ta",h:"La cosa concreta che ottiene chi ha scritto il prompt.",p:"Un testo che posso riscrivere subito, sapendo dove intervenire e perché."},
+    {k:"success",lb:"Segnale di riuscita",ty:"ta",h:"Come capisci che ha funzionato.",p:"Ogni osservazione è ancorata a un passaggio preciso, mai generica."},
+    {k:"format",lb:"Formato dell'output",ty:"ta",h:"Come va confezionata la risposta.",p:"Tre blocchi: cosa funziona, cosa non regge, una frase riscritta come esempio."}]},
+   {l:"N",id:"narrow",t:"Narrowing — i vincoli, cioè i divieti",s:"La sezione più sottovalutata e la più potente: qui decidi cosa non deve fare mai.",f:[
+    {k:"bans",ty:"chips",lb:"Divieti espliciti",src:"bans",h:"Seleziona quelli che valgono per questo compito."},
+    {k:"extraBans",lb:"Altri divieti",ty:"ta",h:"Uno per riga.",p:"Non riscrivere il testo per intero.\nNon proporre titoli alternativi se non li chiedo."},
+    {k:"tone",ty:"chips",lb:"Tono",src:"tones",h:"Massimo due o tre: se ne scegli troppi, si annullano."},
+    {k:"length",ty:"sel",lb:"Lunghezza delle risposte"},
+    {k:"edge",lb:"Casi limite",ty:"ta",h:"Cosa fa quando la richiesta è ambigua, incompleta o fuori perimetro.",p:"Se il testo è troppo corto per un giudizio, dillo e chiedi il resto."}]}]
+ },
+ es: {
+  doc:"RISEN Builder — constructor de prompts",
+  eyebrow:"Constructor de prompts · método R.I.S.E.N.",
+  title:"Cinco campos, <em>un prompt que funciona</em>.",
+  standfirst:"Sirve para cualquier tarea: corregir, escribir, analizar, entrevistar, enseñar. Completá las cinco secciones y el prompt se escribe a la derecha mientras escribís.",
+  panel:"El prompt", meter:" / 5 secciones", todo:"a completar", done:"completa",
+  copy:"Copiar el prompt", copied:"Copiado", copyFail:"No se pudo copiar",
+  md:"Descargar .md", json:"Descargar .json", load:"Cargar .json", clear:"Vaciar todo", confirm:"¿Confirmás?",
+  filehint:"El .md es el prompt listo para pegar; el .json es la ficha, para volver a abrirla y versionarla.",
+  badfile:"El archivo no es una ficha RISEN válida.",
+  foot:"R.I.S.E.N. — Role · Instructions · Steps · End goal · Narrowing. Todo funciona en el navegador: ningún dato sale de esta página.",
+  stepsLb:"Pasos en secuencia", stepsHint:"Calcá el proceso real. Con tres a seis pasos alcanza.", addStep:"+ agregar paso",
+  stepFirst:"El primer paso: qué pregunta o verifica antes de empezar.", stepNext:"Paso siguiente…", stepDel:"Eliminar paso",
+  ghost:"«a completar»",
+  bans:["No inventes datos, fuentes ni citas","Si falta información, pedila en lugar de deducirla","Sin introducciones ni resúmenes del pedido","No uses jerga sin explicarla","Una sola pregunta por turno","No des la solución hecha","No salgas del ámbito indicado","Sin listas con viñetas salvo que se pidan"],
+  tones:["Neutro y profesional","Divulgativo","Periodístico","Socrático","Directo y sintético","Cálido y coloquial"],
+  lens:["Máximo 150 palabras por respuesta","Máximo 300 palabras por respuesta","Máximo 600 palabras por respuesta","Sin límite, pero sin repeticiones"],
+  out:{role:"## ROL",voice:"Voz: ",task:"## QUÉ TENÉS QUE HACER",method:"Método a seguir:",criteria:"Criterios de calidad:",steps:"## CÓMO PROCEDÉS, EN ESTE ORDEN",stepsRule:"No saltees pasos ni adelantes uno posterior antes de cerrar el anterior.",goal:"## OBJETIVO FINAL",success:"El trabajo está logrado cuando: ",format:"Formato de la respuesta:",bans:"## LÍMITES — LO QUE NUNCA TENÉS QUE HACER",tone:"Tono: ",length:"Extensión: ",edge:"Casos límite:",close:"Si un pedido te lleva fuera de estos límites, decilo abiertamente en lugar de esquivarlos."},
+  B:[
+   {l:"R",id:"role",t:"Role — quién es, antes de abrir la boca",s:"La identidad que asume el modelo. Cuanto más específica, más se sostiene el registro durante toda la conversación.",f:[
+    {k:"role",lb:"Rol",ty:"ta",h:"Una frase en segunda persona: «Sos un…»",p:"Sos un editor que trabaja con textos de divulgación de marketing."},
+    {k:"expertise",lb:"Competencia que pone en juego",ty:"ta",h:"Lo que sabe hacer mejor que nadie.",p:"Reconocés a simple vista un comienzo débil, una idea enterrada a mitad del texto, un ejemplo que no se sostiene."},
+    {k:"voice",lb:"Voz y postura",ty:"tx",h:"Cómo acompaña a quien lee: mentor, sparring, editor exigente…",p:"Editor exigente pero leal: dice las cosas como son sin humillar el texto."}]},
+   {l:"I",id:"instr",t:"Instructions — qué tiene que hacer, exactamente",s:"Acá transferís tu método. Es la sección que separa un prompt genérico del tuyo.",f:[
+    {k:"task",lb:"Tarea",ty:"ta",h:"La acción central, en una frase.",p:"Leé el texto que te paso y devolveme una revisión que lo haga más claro y más contundente."},
+    {k:"method",lb:"El método a seguir",ty:"ta",h:"Cómo lo harías vos. Qué mirás primero, qué perdonás, qué no.",p:"Primero la solidez de la idea central, después la estructura, al final la frase."},
+    {k:"criteria",lb:"Criterios de calidad",ty:"ta",h:"Las dimensiones con las que juzga. Uno por línea.",p:"Claridad de la idea\nFuerza del comienzo\nEjemplos concretos\nRitmo"}]},
+   {l:"S",id:"steps",t:"Steps — la secuencia que sigue cada vez",s:"El proceso hecho explícito. El orden importa: es lo que vuelve previsible el resultado.",f:[{ty:"steps"}]},
+   {l:"E",id:"end",t:"End goal — qué le queda a quien lo usa",s:"No qué produce el modelo: qué cambia para quien lo usa.",f:[
+    {k:"goal",lb:"Resultado esperado",ty:"ta",h:"Lo concreto que obtiene quien escribió el prompt.",p:"Un texto que puedo reescribir enseguida, sabiendo dónde intervenir y por qué."},
+    {k:"success",lb:"Señal de éxito",ty:"ta",h:"Cómo te das cuenta de que funcionó.",p:"Cada observación está anclada a un pasaje preciso, nunca es genérica."},
+    {k:"format",lb:"Formato de la respuesta",ty:"ta",h:"Cómo se presenta la respuesta.",p:"Tres bloques: qué funciona, qué no se sostiene, una frase reescrita como ejemplo."}]},
+   {l:"N",id:"narrow",t:"Narrowing — los límites, es decir, lo prohibido",s:"La sección más subestimada y la más poderosa: acá decidís lo que nunca tiene que hacer.",f:[
+    {k:"bans",ty:"chips",lb:"Prohibiciones explícitas",src:"bans",h:"Elegí las que valen para esta tarea."},
+    {k:"extraBans",lb:"Otras prohibiciones",ty:"ta",h:"Una por línea.",p:"No reescribas el texto entero.\nNo propongas títulos alternativos si no te los pido."},
+    {k:"tone",ty:"chips",lb:"Tono",src:"tones",h:"Dos o tres como máximo: si elegís demasiados, se anulan."},
+    {k:"length",ty:"sel",lb:"Extensión de las respuestas"},
+    {k:"edge",lb:"Casos límite",ty:"ta",h:"Qué hace cuando el pedido es ambiguo, incompleto o está fuera del perímetro.",p:"Si el texto es demasiado corto para opinar, decilo y pedí el resto."}]}]
+ }
+};
 
-const B=[
-{l:"R",id:"role",t:"Role — chi è, prima ancora di aprire bocca",s:"L'identità che il modello assume. Più è specifica, più il registro tiene per tutta la conversazione.",f:[
- {k:"role",lb:"Ruolo",ty:"ta",h:"Una frase in seconda persona: «Sei un…»",p:"Sei un revisore editoriale che lavora su testi divulgativi di marketing."},
- {k:"expertise",lb:"Competenza da mettere in campo",ty:"ta",h:"Cosa sa fare meglio di chiunque altro.",p:"Riconosci a colpo d'occhio un attacco debole, un'idea sepolta a metà testo, un esempio che non regge."},
- {k:"voice",lb:"Voce e postura",ty:"tx",h:"Come sta accanto a chi legge: mentore, sparring partner, editor severo…",p:"Editor esigente ma leale: dice le cose come stanno senza umiliare il testo."}]},
-{l:"I",id:"instr",t:"Instructions — cosa deve fare, esattamente",s:"Qui trasferisci il tuo metodo. È la sezione che separa un prompt generico dal tuo.",f:[
- {k:"task",lb:"Compito",ty:"ta",h:"L'azione centrale, in una frase.",p:"Leggi il testo che ti sottopongo e restituisci una revisione che lo renda più chiaro e più incisivo."},
- {k:"method",lb:"Il metodo da seguire",ty:"ta",h:"Come lo faresti tu. Cosa guardi per primo, cosa perdoni, cosa no.",p:"Prima la tenuta dell'idea centrale, poi la struttura, infine la frase."},
- {k:"criteria",lb:"Criteri di qualità",ty:"ta",h:"Le dimensioni su cui giudica. Uno per riga.",p:"Chiarezza dell'idea\nForza dell'attacco\nConcretezza degli esempi\nRitmo"}]},
-{l:"S",id:"steps",t:"Steps — la sequenza che segue ogni volta",s:"Il processo reso esplicito. L'ordine conta: è ciò che rende il risultato prevedibile.",f:[{ty:"steps"}]},
-{l:"E",id:"end",t:"End goal — cosa resta a chi legge",s:"Non cosa produce il modello: cosa cambia per chi lo usa.",f:[
- {k:"goal",lb:"Risultato atteso",ty:"ta",h:"La cosa concreta che ottiene chi ha scritto il prompt.",p:"Un testo che posso riscrivere subito, sapendo dove intervenire e perché."},
- {k:"success",lb:"Segnale di riuscita",ty:"ta",h:"Come capisci che ha funzionato.",p:"Ogni osservazione è ancorata a un passaggio preciso, mai generica."},
- {k:"format",lb:"Formato dell'output",ty:"ta",h:"Come va confezionata la risposta.",p:"Tre blocchi: cosa funziona, cosa non regge, una frase riscritta come esempio."}]},
-{l:"N",id:"narrow",t:"Narrowing — i vincoli, cioè i divieti",s:"La sezione più sottovalutata e la più potente: qui decidi cosa non deve fare mai.",f:[
- {k:"bans",ty:"chips",lb:"Divieti espliciti",src:"bans",h:"Seleziona quelli che valgono per questo compito."},
- {k:"extraBans",lb:"Altri divieti",ty:"ta",h:"Uno per riga.",p:"Non riscrivere il testo per intero.\nNon proporre titoli alternativi se non li chiedo."},
- {k:"tone",ty:"chips",lb:"Tono",src:"tone",h:"Massimo due o tre: se ne scegli troppi, si annullano."},
- {k:"length",ty:"sel",lb:"Lunghezza delle risposte"},
- {k:"edge",lb:"Casi limite",ty:"ta",h:"Cosa fa quando la richiesta è ambigua, incompleta o fuori perimetro.",p:"Se il testo è troppo corto per un giudizio, dillo e chiedi il resto."}]}];
+/* chips and length are stored as indices, so switching language keeps the choices */
+const EMPTY={role:"",expertise:"",voice:"",task:"",method:"",criteria:"",steps:["",""],goal:"",success:"",format:"",bans:[],tone:[],length:1,edge:"",extraBans:""};
+const state=JSON.parse(JSON.stringify(EMPTY));
+let lang="it", L=T.it;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const KEY="risen-lang";
+function getSaved(){try{return localStorage.getItem(KEY);}catch(e){return null;}}
+function setSaved(v){try{localStorage.setItem(KEY,v);}catch(e){}}
 
 function fh(f){
- if(f.ty==="steps")return '<div class="field"><label>Passaggi in sequenza</label><p class="hint">Ricalca il processo reale. Tre-sei passaggi bastano.</p><div id="stepList"></div><button class="chip" type="button" id="addStep" style="margin-top:6px">+ aggiungi passaggio</button></div>';
- if(f.ty==="chips"){const s=f.src==="bans"?BANS:TONES;return '<div class="field"><label>'+f.lb+'</label><p class="hint">'+f.h+'</p><div class="chips" data-g="'+f.k+'">'+s.map(t=>'<button type="button" class="chip" aria-pressed="false" data-v="'+t+'">'+t+'</button>').join("")+'</div></div>';}
- if(f.ty==="sel")return '<div class="field"><label for="f_'+f.k+'">'+f.lb+'</label><select id="f_'+f.k+'" data-k="'+f.k+'">'+LENS.map(l=>'<option'+(l===state.length?" selected":"")+'>'+l+'</option>').join("")+'</select></div>';
- const el=f.ty==="ta"?'<textarea id="f_'+f.k+'" data-k="'+f.k+'" placeholder="'+f.p+'"></textarea>':'<input type="text" id="f_'+f.k+'" data-k="'+f.k+'" placeholder="'+f.p+'">';
+ if(f.ty==="steps")return '<div class="field"><label>'+L.stepsLb+'</label><p class="hint">'+L.stepsHint+'</p><div id="stepList"></div><button class="chip" type="button" id="addStep" style="margin-top:6px">'+L.addStep+'</button></div>';
+ if(f.ty==="chips"){const s=L[f.src];return '<div class="field"><label>'+f.lb+'</label><p class="hint">'+f.h+'</p><div class="chips" data-g="'+f.k+'">'+s.map((t,i)=>'<button type="button" class="chip" aria-pressed="false" data-i="'+i+'">'+esc(t)+'</button>').join("")+'</div></div>';}
+ if(f.ty==="sel")return '<div class="field"><label for="f_'+f.k+'">'+f.lb+'</label><select id="f_'+f.k+'" data-sel="'+f.k+'">'+L.lens.map((l,i)=>'<option value="'+i+'">'+esc(l)+'</option>').join("")+'</select></div>';
+ const el=f.ty==="ta"?'<textarea id="f_'+f.k+'" data-k="'+f.k+'" placeholder="'+esc(f.p)+'"></textarea>':'<input type="text" id="f_'+f.k+'" data-k="'+f.k+'" placeholder="'+esc(f.p)+'">';
  return '<div class="field"><label for="f_'+f.k+'">'+f.lb+'</label><p class="hint">'+f.h+'</p>'+el+'</div>';
 }
-document.getElementById("blocks").innerHTML=B.map((b,i)=>'<section class="block'+(i===0?" open":"")+'" id="b_'+b.id+'"><button class="block-head" type="button" aria-expanded="'+(i===0)+'"><span class="letter">'+b.l+'</span><span><h2>'+b.t+'</h2><p>'+b.s+'</p></span><span class="head-right"><span class="status" data-st>da compilare</span><span class="chevron">&#9660;</span></span></button><div class="block-body">'+b.f.map(fh).join("")+'</div></section>').join("");
 
-document.querySelectorAll(".block-head").forEach(h=>h.addEventListener("click",()=>{const b=h.closest(".block");h.setAttribute("aria-expanded",b.classList.toggle("open"));}));
-document.addEventListener("input",e=>{const k=e.target.dataset.k;if(k){state[k]=e.target.value;render();}});
-document.addEventListener("change",e=>{const k=e.target.dataset.k;if(k&&e.target.tagName==="SELECT"){state[k]=e.target.value;render();}});
-document.addEventListener("click",e=>{const c=e.target.closest(".chip[data-v]");if(!c)return;const g=c.closest("[data-g]").dataset.g,on=c.getAttribute("aria-pressed")==="true",v=c.dataset.v;c.setAttribute("aria-pressed",String(!on));state[g]=on?state[g].filter(x=>x!==v):state[g].concat([v]);render();});
-
-const sl=document.getElementById("stepList");
-function rsteps(){sl.innerHTML=state.steps.map((s,i)=>'<div class="step-row"><span class="step-num">'+String(i+1).padStart(2,"0")+'</span><textarea data-s="'+i+'" placeholder="'+(i===0?"Il primo passaggio: cosa chiede o verifica prima di partire.":"Passaggio successivo…")+'">'+s.replace(/</g,"&lt;")+'</textarea><button class="icon-btn" type="button" data-d="'+i+'" title="Elimina passaggio">&times;</button></div>').join("");}
-sl.addEventListener("input",e=>{const i=e.target.dataset.s;if(i!==undefined){state.steps[+i]=e.target.value;render();}});
-sl.addEventListener("click",e=>{const d=e.target.dataset.d;if(d===undefined)return;state.steps.splice(+d,1);if(!state.steps.length)state.steps.push("");rsteps();render();});
-document.getElementById("addStep").addEventListener("click",()=>{state.steps.push("");rsteps();render();});
-rsteps();
-
-const G="\u00ab\u2026\u00bb";
-const lines=t=>t.split("\n").map(s=>s.trim()).filter(Boolean);
-function build(){const s=state,st=s.steps.map(x=>x.trim()).filter(Boolean),bans=s.bans.concat(lines(s.extraBans)),o=[];
-o.push("## RUOLO");o.push(s.role||G);if(s.expertise)o.push(s.expertise);if(s.voice)o.push("Voce: "+s.voice);o.push("");
-o.push("## COSA DEVI FARE");o.push(s.task||G);
-if(s.method){o.push("");o.push("Metodo da seguire:");o.push(s.method);}
-if(s.criteria){o.push("");o.push("Criteri di qualit\u00e0:");o.push(lines(s.criteria).map(x=>"- "+x).join("\n"));}o.push("");
-o.push("## COME PROCEDI, IN QUEST'ORDINE");
-o.push(st.length?st.map((t,i)=>(i+1)+". "+t).join("\n"):"1. "+G);
-o.push("Non saltare passaggi e non anticiparne uno successivo prima di aver chiuso il precedente.");o.push("");
-o.push("## OBIETTIVO FINALE");o.push(s.goal||G);
-if(s.success)o.push("Il lavoro \u00e8 riuscito quando: "+s.success);
-if(s.format){o.push("");o.push("Formato della risposta:");o.push(s.format);}o.push("");
-o.push("## VINCOLI \u2014 COSA NON DEVI FARE MAI");
-o.push(bans.length?bans.map(b=>"- "+b).join("\n"):"- "+G);
-if(s.tone.length)o.push("\nTono: "+s.tone.join(", ").toLowerCase()+".");
-o.push("Lunghezza: "+s.length.toLowerCase()+".");
-if(s.edge){o.push("");o.push("Casi limite:");o.push(lines(s.edge).map(x=>"- "+x).join("\n"));}
-o.push("");o.push("---");o.push("Se una richiesta ti porta fuori da questi vincoli, dillo apertamente invece di aggirarli.");
-return o.join("\n");}
-
-const out=document.getElementById("out"),meter=document.getElementById("meter");
-function render(){
- const t=build();
- out.innerHTML=t.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])).replace(/^(#{1,2} .*)$/gm,'<span class="h">$1</span>').replace(/\u00ab\u2026\u00bb/g,'<span class="ghost">\u00abda compilare\u00bb</span>');
- const c=[!!state.role.trim(),!!state.task.trim(),state.steps.filter(x=>x.trim()).length>=2,!!state.goal.trim(),(state.bans.length+lines(state.extraBans).length)>0];
- meter.textContent=c.filter(Boolean).length+" / 5 sezioni";
- B.forEach((b,i)=>{const el=document.getElementById("b_"+b.id);el.classList.toggle("done",c[i]);el.querySelector("[data-st]").textContent=c[i]?"completa":"da compilare";});
+function mount(){
+ const open=[...document.querySelectorAll(".block.open")].map(b=>b.id);
+ $("blocks").innerHTML=L.B.map((b,i)=>'<section class="block" id="b_'+b.id+'"><button class="block-head" type="button" aria-expanded="false"><span class="letter">'+b.l+'</span><span><h2>'+b.t+'</h2><p>'+b.s+'</p></span><span class="head-right"><span class="status" data-st></span><span class="chevron">&#9660;</span></span></button><div class="block-body">'+b.f.map(fh).join("")+'</div></section>').join("");
+ (open.length?open:["b_role"]).forEach(id=>{const b=$(id);if(b){b.classList.add("open");b.querySelector(".block-head").setAttribute("aria-expanded","true");}});
+ document.querySelectorAll(".block-head").forEach(h=>h.addEventListener("click",()=>{const b=h.closest(".block");h.setAttribute("aria-expanded",b.classList.toggle("open"));}));
+ $("addStep").addEventListener("click",()=>{state.steps.push("");rsteps();render();});
+ sync(false);
 }
 
-function sync(){
+function rsteps(){
+ const sl=$("stepList");
+ sl.innerHTML=state.steps.map((s,i)=>'<div class="step-row"><span class="step-num">'+String(i+1).padStart(2,"0")+'</span><textarea data-s="'+i+'" placeholder="'+esc(i===0?L.stepFirst:L.stepNext)+'">'+esc(s)+'</textarea><button class="icon-btn" type="button" data-d="'+i+'" title="'+esc(L.stepDel)+'" aria-label="'+esc(L.stepDel)+'">&times;</button></div>').join("");
+}
+document.addEventListener("input",e=>{
+ const k=e.target.dataset.k; if(k){state[k]=e.target.value;render();return;}
+ const i=e.target.dataset.s; if(i!==undefined){state.steps[+i]=e.target.value;render();}
+});
+document.addEventListener("change",e=>{const k=e.target.dataset.sel;if(k){state[k]=+e.target.value;render();}});
+document.addEventListener("click",e=>{
+ const d=e.target.closest("[data-d]");
+ if(d){state.steps.splice(+d.dataset.d,1);if(!state.steps.length)state.steps.push("");rsteps();render();return;}
+ const c=e.target.closest(".chip[data-i]");if(!c)return;
+ const g=c.closest("[data-g]").dataset.g,i=+c.dataset.i,on=state[g].indexOf(i)>-1;
+ state[g]=on?state[g].filter(x=>x!==i):state[g].concat([i]);
+ c.setAttribute("aria-pressed",String(!on));render();
+});
+
+const lines=t=>t.split("\n").map(s=>s.trim()).filter(Boolean);
+function build(){
+ const s=state,o=[],O=L.out,G=L.ghost,st=s.steps.map(x=>x.trim()).filter(Boolean);
+ const bans=s.bans.slice().sort((a,b)=>a-b).map(i=>L.bans[i]).concat(lines(s.extraBans));
+ o.push(O.role);o.push(s.role||G);if(s.expertise)o.push(s.expertise);if(s.voice)o.push(O.voice+s.voice);o.push("");
+ o.push(O.task);o.push(s.task||G);
+ if(s.method){o.push("");o.push(O.method);o.push(s.method);}
+ if(s.criteria){o.push("");o.push(O.criteria);o.push(lines(s.criteria).map(x=>"- "+x).join("\n"));}o.push("");
+ o.push(O.steps);o.push(st.length?st.map((t,i)=>(i+1)+". "+t).join("\n"):"1. "+G);o.push(O.stepsRule);o.push("");
+ o.push(O.goal);o.push(s.goal||G);
+ if(s.success)o.push(O.success+s.success);
+ if(s.format){o.push("");o.push(O.format);o.push(s.format);}o.push("");
+ o.push(O.bans);o.push(bans.length?bans.map(b=>"- "+b).join("\n"):"- "+G);
+ if(s.tone.length)o.push("\n"+O.tone+s.tone.slice().sort((a,b)=>a-b).map(i=>L.tones[i]).join(", ").toLowerCase()+".");
+ o.push(O.length+L.lens[s.length].toLowerCase()+".");
+ if(s.edge){o.push("");o.push(O.edge);o.push(lines(s.edge).map(x=>"- "+x).join("\n"));}
+ o.push("");o.push("---");o.push(O.close);
+ return o.join("\n");
+}
+
+function render(){
+ const t=build(),gh=esc(L.ghost);
+ $("out").innerHTML=esc(t).replace(/^(#{1,2} .*)$/gm,'<span class="h">$1</span>').split(gh).join('<span class="ghost">'+gh+'</span>');
+ const c=[!!state.role.trim(),!!state.task.trim(),state.steps.filter(x=>x.trim()).length>=2,!!state.goal.trim(),(state.bans.length+lines(state.extraBans).length)>0];
+ $("meter").textContent=c.filter(Boolean).length+L.meter;
+ L.B.forEach((b,i)=>{const el=$("b_"+b.id);el.classList.toggle("done",c[i]);el.querySelector("[data-st]").textContent=c[i]?L.done:L.todo;});
+}
+
+function sync(openAll){
  document.querySelectorAll("[data-k]").forEach(el=>{const v=state[el.dataset.k];if(typeof v==="string")el.value=v;});
- document.querySelectorAll("[data-g]").forEach(g=>{const a=state[g.dataset.g];g.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed",String(a.indexOf(c.dataset.v)>-1)));});
+ document.querySelectorAll("[data-g]").forEach(g=>{const a=state[g.dataset.g];g.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed",String(a.indexOf(+c.dataset.i)>-1)));});
+ const sel=$("f_length");if(sel)sel.value=String(state.length);
  rsteps();
- document.querySelectorAll(".block").forEach(b=>b.classList.add("open"));
- document.querySelectorAll(".block-head").forEach(h=>h.setAttribute("aria-expanded","true"));
+ if(openAll){document.querySelectorAll(".block").forEach(b=>b.classList.add("open"));document.querySelectorAll(".block-head").forEach(h=>h.setAttribute("aria-expanded","true"));}
  render();
 }
 
-function download(name,content,type){const blob=new Blob([content],{type});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
-const slug=()=>"risen";
-document.getElementById("btnCopy").addEventListener("click",async e=>{const b=e.currentTarget,o=b.textContent;try{await navigator.clipboard.writeText(build());b.textContent="Copiato";}catch(x){b.textContent="Copia non riuscita";}setTimeout(()=>b.textContent=o,1800);});
-document.getElementById("btnMd").addEventListener("click",()=>download(slug()+"-prompt.md",build(),"text/markdown"));
-document.getElementById("btnJson").addEventListener("click",()=>download(slug()+"-scheda.json",JSON.stringify(state,null,2),"application/json"));
-const fileIn=document.getElementById("fileIn");
-document.getElementById("btnLoad").addEventListener("click",()=>fileIn.click());
-fileIn.addEventListener("change",()=>{const f=fileIn.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);Object.keys(EMPTY).forEach(k=>{if(d[k]!==undefined)state[k]=d[k];});if(!state.steps.length)state.steps=[""];sync();}catch(x){alert("Il file non è una scheda RISEN valida.");}};r.readAsText(f);fileIn.value="";});
+function applyLang(l){
+ lang=l==="es"?"es":"it";L=T[lang];
+ document.documentElement.lang=lang;document.title=L.doc;
+ document.querySelectorAll("[data-t]").forEach(el=>{const v=L[el.dataset.t];if(el.hasAttribute("data-html"))el.innerHTML=v;else el.textContent=v;});
+ document.querySelectorAll("[data-lang]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.lang===lang)));
+ setSaved(lang);
+ if(location.hash!=="#"+lang){try{history.replaceState(null,"","#"+lang);}catch(e){}}
+ mount();
+}
+function start(l){$("chooser").hidden=true;$("app").hidden=false;applyLang(l);window.scrollTo(0,0);}
+document.querySelectorAll("[data-pick]").forEach(b=>b.addEventListener("click",()=>start(b.dataset.pick)));
+document.querySelectorAll("[data-lang]").forEach(b=>b.addEventListener("click",()=>applyLang(b.dataset.lang)));
+
+/* files */
+function msg(t){const m=$("msg");m.textContent=t;m.hidden=false;setTimeout(()=>{m.hidden=true;},4000);}
+function download(name,content,type){try{const blob=new Blob([content],{type});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}catch(e){}}
+$("btnCopy").addEventListener("click",async e=>{const b=e.currentTarget;try{await navigator.clipboard.writeText(build());b.textContent=L.copied;}catch(x){b.textContent=L.copyFail;}setTimeout(()=>b.textContent=L.copy,1800);});
+$("btnMd").addEventListener("click",()=>download("risen-prompt.md",build(),"text/markdown"));
+$("btnJson").addEventListener("click",()=>download("risen-"+(lang==="es"?"ficha":"scheda")+".json",JSON.stringify(state,null,2),"application/json"));
+$("btnLoad").addEventListener("click",()=>$("fileIn").click());
+function toIdx(arr,lists){return (arr||[]).map(v=>{if(typeof v==="number")return v;for(const l of lists){const i=l.indexOf(v);if(i>-1)return i;}return -1;}).filter(i=>i>-1);}
+$("fileIn").addEventListener("change",()=>{const f=$("fileIn").files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);
+ Object.keys(EMPTY).forEach(k=>{if(d[k]!==undefined)state[k]=d[k];});
+ state.bans=toIdx(d.bans,[T.it.bans,T.es.bans]);state.tone=toIdx(d.tone,[T.it.tones,T.es.tones]);
+ if(typeof d.length==="string"){const i=Math.max(T.it.lens.indexOf(d.length),T.es.lens.indexOf(d.length));state.length=i>-1?i:1;}
+ if(typeof state.length!=="number"||!L.lens[state.length])state.length=1;
+ if(!Array.isArray(state.steps)||!state.steps.length)state.steps=[""];
+ sync(true);}catch(x){msg(L.badfile);}};r.readAsText(f);$("fileIn").value="";});
 let armed=false;
-document.getElementById("btnClear").addEventListener("click",e=>{const b=e.currentTarget;if(!armed){armed=true;b.textContent="Confermi?";setTimeout(()=>{armed=false;b.textContent="Svuota tutto";},3000);return;}armed=false;b.textContent="Svuota tutto";Object.assign(state,JSON.parse(JSON.stringify(EMPTY)));sync();});
-render();
+$("btnClear").addEventListener("click",e=>{const b=e.currentTarget;if(!armed){armed=true;b.textContent=L.confirm;setTimeout(()=>{armed=false;b.textContent=L.clear;},3000);return;}armed=false;b.textContent=L.clear;Object.assign(state,JSON.parse(JSON.stringify(EMPTY)));sync(false);});
+
+/* entry: #it / #es skip the chooser (handy for QR codes); otherwise ask */
+const h=location.hash.replace("#","");
+if(h==="it"||h==="es")start(h);
+else $("chooser").hidden=false;
 </script>
 </body>
 </html>

@@ -1,35 +1,29 @@
 # RISEN Builder
 
-Un costruttore di prompt basato sul metodo **R.I.S.E.N.**: cinque form da compilare, un prompt che si scrive in tempo reale.
+**IT** · Un costruttore di prompt basato sul metodo **R.I.S.E.N.**: cinque sezioni da compilare, un prompt che si scrive in tempo reale. In italiano e in spagnolo.
+**ES** · Un constructor de prompts basado en el método **R.I.S.E.N.**: cinco secciones para completar, un prompt que se escribe en tiempo real. En italiano y en español.
 
-Serve per qualsiasi compito — correggere, scrivere, analizzare, intervistare, insegnare — e mostra l'anatomia di un prompt invece di descriverla.
+| | IT | ES |
+|---|---|---|
+| **R**ole | Il ruolo che il modello assume | El rol que asume el modelo |
+| **I**nstructions | Cosa deve fare, con il tuo metodo | Qué tiene que hacer, con tu método |
+| **S**teps | La sequenza di passaggi | La secuencia de pasos |
+| **E**nd goal | Il risultato che resta a chi lo usa | El resultado que le queda a quien lo usa |
+| **N**arrowing | Vincoli, tono, lunghezza, casi limite | Límites, tono, extensión, casos límite |
 
-## Le cinque sezioni
+## Lingua · Idioma
+La pagina iniziale chiede la lingua; in alto a destra si cambia in ogni momento (IT · ES), senza perdere ciò che hai scritto.
+Link diretti, utili per i QR · Enlaces directos, útiles para los QR:
+- `https://parliamodimarketing.github.io/risenprompt/#it`
+- `https://parliamodimarketing.github.io/risenprompt/#es`
 
-| Elemento | Cosa contiene |
-|---|---|
-| **R**ole | Il ruolo che il modello assume prima ancora di aprire bocca |
-| **I**nstructions | Cosa deve fare esattamente — è qui che si trasferisce il proprio metodo |
-| **S**teps | La sequenza di passaggi, ricalcata sul processo reale |
-| **E**nd goal | Il risultato che resta a chi usa il prompt |
-| **N**arrowing | I vincoli espliciti: cosa NON deve fare, tono, lunghezza, casi limite |
+## Come si usa · Cómo se usa
+Compila le sezioni → **Copia il prompt**, oppure scarica il `.md` (il prompt) e il `.json` (la scheda, riapribile con **Carica .json**).
+Completá las secciones → **Copiar el prompt**, o descargá el `.md` (el prompt) y el `.json` (la ficha, que se vuelve a abrir con **Cargar .json**).
 
-## Come si usa
+## GitHub Pages
+`Settings` → `Pages` → **Deploy from a branch** → `main` / `(root)` → Save.
 
-1. Apri la pagina.
-2. Compila le cinque sezioni. Il contatore in alto a destra segna quante sono complete.
-3. **Copia il prompt**, oppure scarica il `.md` (il prompt pronto) e il `.json` (la scheda, riapribile con **Carica .json**).
+File singolo, nessun backend: tutto gira nel browser · Un solo archivo, sin backend: todo funciona en el navegador.
 
-## Pubblicare su GitHub Pages
-
-1. Crea un repository e caricaci `index.html` e `README.md`.
-2. `Settings` → `Pages` → Source: **Deploy from a branch** → branch `main`, cartella `/ (root)`.
-3. Dopo un minuto la pagina è online su `https://<utente>.github.io/<repository>/`.
-
-## Note tecniche
-
-File singolo, nessuna dipendenza se non i font di Google. Tutto gira nel browser: nessun dato lascia la pagina, nessun backend, nessuna chiave API.
-
-## Licenza
-
-MIT.
+Licenza / Licencia: MIT · Barbara Lorenzini · Parliamo di Marketing
